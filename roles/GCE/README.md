@@ -1,7 +1,7 @@
 Role Name
 =========
 
-Deploy HAproxy 1.7-stable on a VM
+Create GCE instances using API key and ansible playbook
 
 Requirements
 ------------
@@ -33,7 +33,7 @@ Including an example of how to use your role (for instance, with variables passe
       connection: local
       gather_facts: no
       roles:
-        - haproxy
+        - GCE
 
 License
 -------
