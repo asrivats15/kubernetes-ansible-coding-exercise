@@ -1,8 +1,8 @@
 ---
-# tasks file for haproxy
- - name: Launch instance
+# tasks file for GCE
+ - name: Launch instances
    gce:
-       instance_names: dev
+       instance_names: dev01,dev02,dev03,dev04
        machine_type: "{{ machine_type }}"
        image: "{{ image }}"
        service_account_email: "{{ service_account_email }}"
@@ -10,9 +10,9 @@
        project_id: "{{ project_id }}"
    tags:
     - create
- - name: Delete instance
+ - name: Delete instances
    gce:
-       instance_names: dev
+       instance_names: dev01,dev02,dev03,dev04
        machine_type: "{{ machine_type }}"
        image: "{{ image }}"
        service_account_email: "{{ service_account_email }}"
