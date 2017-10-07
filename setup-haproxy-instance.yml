@@ -1,0 +1,6 @@
+- name: Create or delete instance(s) based on tag
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - haproxy

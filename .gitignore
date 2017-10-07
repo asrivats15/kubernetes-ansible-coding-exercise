@@ -1,0 +1,8 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Ansible template
+*.retry
+
+.gitignore
+.idea/
+kubernetes-ansible-coding-exercise.iml
+.vault_pass.txt

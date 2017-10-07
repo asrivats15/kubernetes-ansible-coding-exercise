@@ -1,0 +1,23 @@
+---
+# tasks file for haproxy
+ - name: Launch instance
+   gce:
+       instance_names: dev
+       machine_type: "{{ machine_type }}"
+       image: "{{ image }}"
+       service_account_email: "{{ service_account_email }}"
+       credentials_file: "{{ credentials_file }}"
+       project_id: "{{ project_id }}"
+   tags:
+    - create
+ - name: Delete instance
+   gce:
+       instance_names: dev
+       machine_type: "{{ machine_type }}"
+       image: "{{ image }}"
+       service_account_email: "{{ service_account_email }}"
+       credentials_file: "{{ credentials_file }}"
+       project_id: "{{ project_id }}"
+       state: absent
+   tags:
+    - delete
