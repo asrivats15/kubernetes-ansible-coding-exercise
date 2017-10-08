@@ -1,7 +1,6 @@
 ---
 # tasks file for haproxy
 - name: haproxy apt repo (Ubuntu)
-  become_user: root
   apt_repository:
     repo: "ppa:vbernat/haproxy-1.7"
     state: present
@@ -10,7 +9,20 @@
     - create
 
 - name: install haproxy
-  become_user: root
   apt: name=haproxy state=present
+  tags:
+    - create
+
+- name: Enable init script
+  replace: dest='/etc/default/haproxy'
+         regexp='ENABLED=0'
+         replace='ENABLED=1'
+  tags:
+    - create
+
+- name: Update HAProxy config
+  template: src=templates/haproxy.cfg dest=/etc/haproxy/haproxy.cfg backup=yes
+  notify:
+    - restart haproxy
   tags:
     - create
