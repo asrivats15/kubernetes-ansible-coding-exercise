@@ -1,0 +1,70 @@
+---
+- name: Create instance(s)
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Get the default SSH key
+      command: cat ~/.ssh/id_rsa.pub
+      register: ssh_key
+
+    - name: Launch haproxy instance
+      gce:
+        instance_names: haproxy
+        zone: us-east4-a
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        tags: haproxy
+        metadata: '{"sshKeys":"root:{{ ssh_key.stdout }}"}'
+      register: haproxy
+
+    - name: Wait for SSH to come up
+      wait_for: host={{ item.public_ip }} port=22 delay=3 timeout=60
+      with_items: "{{ haproxy.instance_data }}"
+
+    - name: Add host to groupname
+      add_host: hostname={{ item.public_ip }} groupname=haproxy
+      with_items: "{{ haproxy.instance_data }}"
+
+    - name: Open stats port
+      gce_net:
+        name: default
+        fwname: "stats-firewall-rule"
+        allowed: tcp:8080
+        state: "present"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+  tags:
+    - create
+
+- name: Manage haproxy instance
+  hosts: haproxy
+  gather_facts: yes
+  connection: ssh
+  remote_user: root
+  roles:
+    - haproxy
+  tags:
+    - create
+
+- name: Delete instance(s)
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Delete haproxy instance
+      gce:
+        instance_names: haproxy
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        zone: us-east4-a
+        state: absent
+  tags:
+    - delete
