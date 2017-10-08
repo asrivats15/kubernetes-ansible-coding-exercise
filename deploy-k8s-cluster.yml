@@ -1,0 +1,60 @@
+---
+- name: Create instance(s)
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Get the default SSH key
+      command: cat ~/.ssh/id_rsa.pub
+      register: ssh_key
+
+    - name: Launch k8s instances
+      gce:
+        instance_names: master,worker1,worker2,worker3
+        zone: us-east4-a
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        tags: k8s
+        metadata: '{"sshKeys":"root:{{ ssh_key.stdout }}"}'
+      register: k8s
+
+    - name: Wait for SSH to come up
+      wait_for: host={{ item.public_ip }} port=22 delay=3 timeout=60
+      with_items: "{{ k8s.instance_data }}"
+
+    - name: Add host to groupname
+      add_host: hostname={{ item.public_ip }} groupname=k8s
+      with_items: "{{ k8s.instance_data }}"
+  tags:
+    - create
+
+- name: Manage k8 instance
+  hosts: k8s
+  gather_facts: yes
+  connection: ssh
+  remote_user: root
+  roles:
+    - k8s
+  tags:
+    - create
+
+- name: Delete instance(s)
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Delete k8s instances
+      gce:
+        instance_names: master,worker1,worker2,worker3
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        zone: us-east4-a
+        state: absent
+  tags:
+    - delete
