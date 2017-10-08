@@ -1,2 +1,13 @@
 ---
 # tasks file for haproxy
+- name: haproxy apt repo (Ubuntu)
+  apt_repository:
+    repo: "ppa:vbernat/haproxy-1.7"
+    state: present
+    update_cache: yes
+  tags:
+    - create
+- name: install haproxy
+  apt: name=haproxy state=present
+  tags:
+    - create

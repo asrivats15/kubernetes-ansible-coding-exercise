@@ -1,0 +1,51 @@
+- name: Create instance(s)
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Launch haproxy instance
+      gce:
+        instance_names: haproxy
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        tags: haproxy
+      register: haproxy
+
+    - name: Wait for SSH to come up
+      wait_for: host={{ item.public_ip }} port=22 delay=10 timeout=60
+      with_items: "{{ haproxy.instance_data }}"
+
+    - name: Add host to groupname
+      add_host: hostname={{ item.public_ip }} groupname=haproxy
+      with_items: "{{ haproxy.instance_data }}"
+  tags:
+    - create
+
+- name: Manage haproxy instance
+  hosts: haproxy
+  connection: ssh
+  become_user: raviarju
+  roles:
+    - haproxy
+  tags:
+    - create
+
+- name: Delete instance(s)
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Delete haproxy instance
+      gce:
+        instance_names: haproxy
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        state: absent
+  tags:
+    - delete

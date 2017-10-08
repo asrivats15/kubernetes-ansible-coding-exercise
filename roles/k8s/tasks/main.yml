@@ -1,0 +1,25 @@
+---
+# tasks file for k8s
+  - name: Launch k8s instances
+    gce:
+       instance_names: master,worker1,worker2,worker3
+       machine_type: "{{ machine_type }}"
+       image: "{{ image }}"
+       service_account_email: "{{ service_account_email }}"
+       credentials_file: "{{ credentials_file }}"
+       project_id: "{{ project_id }}"
+    tags:
+      - create
+      - k8s
+
+  - name: Delete instances
+    gce:
+        instance_names: master,worker1,worker2,worker3
+        machine_type: "{{ machine_type }}"
+        image: "{{ image }}"
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"
+        state: absent
+    tags:
+      - delete
