@@ -1,6 +1,3 @@
 ---
 # Install haproxy on GCE VM instance
 - include: deploy-haproxy.yml
-
-# Install k8s cluster on GCE VM instances
-- include: deploy-k8s-cluster.yml
