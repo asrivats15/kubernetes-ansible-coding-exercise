@@ -3,20 +3,20 @@ kind: Deployment
 metadata:
   name: load-test
   labels:
-    app: nginx
+    app: php-apache
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: nginx
+      app: php-apache
   template:
     metadata:
       labels:
-        app: nginx
+        app: php-apache
     spec:
       containers:
-      - name: nginx
-        image: nginx:1.7.9
+      - name: php-apache
+        image: gcr.io/google_containers/hpa-example
         ports:
         - containerPort: 80
 ---
@@ -29,22 +29,25 @@ spec:
   ports:
   - port: 4782
     targetPort: 80
+    nodePort: 31313
     protocol: TCP
   externalIPs:
     - 35.184.144.14
+    - 35.188.100.34
+    - 35.193.246.140
   selector:
-    app: nginx
+    app: php-apache
 ---
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: nginx
+  name: load-test-autoscale
   namespace: default
 spec:
   scaleTargetRef:
     apiVersion: apps/v1beta1
     kind: Deployment
-    name: nginx
+    name: load-test
   minReplicas: 1
   maxReplicas: 10
-  targetCPUUtilizationPercentage: 50
+  targetCPUUtilizationPercentage: 35
